@@ -3,7 +3,7 @@ var defaultUrl = localStorageGetItem("api-url") || "https://preview.api.judge0.c
 defaultUrl = "https://codeserver.tomheaven.cn";
 var apiUrl = defaultUrl;
 var wait = localStorageGetItem("wait") || false;
-var pbUrl = "https://codeserver.tomheaven.cn";
+var pbUrl = "https://pb.tomheaven.cn/source_code/";
 var check_timeout = 200;
 
 var blinkStatusLine = ((localStorageGetItem("blink") || "true") === "true");
@@ -11,7 +11,7 @@ var editorMode = localStorageGetItem("editorMode") || "normal";
 var redirectStderrToStdout = ((localStorageGetItem("redirectStderrToStdout") || "false") === "true");
 var editorModeObject = null;
 
-var fontSize = 24;
+var fontSize = 18;
 
 var MonacoVim;
 var MonacoEmacs;
@@ -77,38 +77,38 @@ var layoutConfig = {
             }, {
                 type: "stack",
                 content: [{
-                        type: "component",
-                        componentName: "stdout",
-                        title: "STDOUT",
-                        isClosable: false,
-                        componentState: {
-                            readOnly: true
-                        }
-                    }, {
-                        type: "component",
-                        componentName: "stderr",
-                        title: "STDERR",
-                        isClosable: false,
-                        componentState: {
-                            readOnly: true
-                        }
-                    }, {
-                        type: "component",
-                        componentName: "compile output",
-                        title: "COMPILE OUTPUT",
-                        isClosable: false,
-                        componentState: {
-                            readOnly: true
-                        }
-                    }, {
-                        type: "component",
-                        componentName: "sandbox message",
-                        title: "SANDBOX MESSAGE",
-                        isClosable: false,
-                        componentState: {
-                            readOnly: true
-                        }
-                    }]
+                    type: "component",
+                    componentName: "stdout",
+                    title: "STDOUT",
+                    isClosable: false,
+                    componentState: {
+                        readOnly: true
+                    }
+                }, {
+                    type: "component",
+                    componentName: "stderr",
+                    title: "STDERR",
+                    isClosable: false,
+                    componentState: {
+                        readOnly: true
+                    }
+                }, {
+                    type: "component",
+                    componentName: "compile output",
+                    title: "COMPILE OUTPUT",
+                    isClosable: false,
+                    componentState: {
+                        readOnly: true
+                    }
+                }, {
+                    type: "component",
+                    componentName: "sandbox message",
+                    title: "SANDBOX MESSAGE",
+                    isClosable: false,
+                    componentState: {
+                        readOnly: true
+                    }
+                }]
             }]
         }]
     }]
@@ -128,23 +128,23 @@ function decode(bytes) {
 }
 
 function localStorageSetItem(key, value) {
-  try {
-    localStorage.setItem(key, value);
-  } catch (ignorable) {
-  }
+    try {
+        localStorage.setItem(key, value);
+    } catch (ignorable) {
+    }
 }
 
 function localStorageGetItem(key) {
-  try {
-    return localStorage.getItem(key);
-  } catch (ignorable) {
-    return null;
-  }
+    try {
+        return localStorage.getItem(key);
+    } catch (ignorable) {
+        return null;
+    }
 }
 
 function showMessages() {
     var width = $updates.offset().left - parseFloat($updates.css("padding-left")) -
-                $navigationMessage.parent().offset().left - parseFloat($navigationMessage.parent().css("padding-left")) - 5;
+        $navigationMessage.parent().offset().left - parseFloat($navigationMessage.parent().css("padding-left")) - 5;
 
     if (width < 200 || messagesData === undefined) {
         return;
@@ -180,6 +180,37 @@ function loadMessages() {
     });
 }
 
+function loadSourceFromJsonServer(url_id) {
+    console.log("DEBUG: loadSources url :" + pbUrl + url_id);
+    $.ajax({
+        url: pbUrl + url_id,
+        type: "GET",
+        dataType: 'json',
+        success: function (data) {
+            // data["id"] , JSON.parse(data["data"])
+            // console.log("DEBUG loaded source_code: " +  data["id"] + ", " + data["data"]);
+            data = JSON.parse(data["data"]);
+            console.log("DEBUG loaded source_code: " +  decode(data["source_code"]));
+            sourceEditor.setValue(decode(data["source_code"]));
+            $selectLanguage.dropdown("set selected", data["language_id"]);
+            $compilerOptions.val(data["compiler_options"]);
+            $commandLineArguments.val(data["command_line_arguments"]);
+            stdinEditor.setValue(decode(data["stdin"]));
+            stdoutEditor.setValue(decode(data["stdout"]));
+            stderrEditor.setValue(decode(data["stderr"]));
+            compileOutputEditor.setValue(decode(data["compile_output"]));
+            sandboxMessageEditor.setValue(decode(data["sandbox_message"]));
+            $statusLine.html(decode(data["status_line"]));
+            // changeEditorLanguage();
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            showError("Not Found", "Code not found!");
+            window.history.replaceState(null, null, location.origin + location.pathname);
+            loadRandomLanguage();
+        }
+    });
+}
+
 function showError(title, content) {
     $("#site-modal #title").html(title);
     $("#site-modal .content").html(content);
@@ -211,7 +242,7 @@ function handleResult(data) {
 
     if (blinkStatusLine) {
         $statusLine.addClass("blink");
-        setTimeout(function() {
+        setTimeout(function () {
             blinkStatusLine = false;
             localStorageSetItem("blink", "false");
             $statusLine.removeClass("blink");
@@ -252,7 +283,7 @@ function handleResult(data) {
 }
 
 function getIdFromURI() {
-  return location.search.substr(1).trim();
+    return location.search.substr(1).trim();
 }
 
 function save() {
@@ -268,12 +299,7 @@ function save() {
         sandbox_message: encode(sandboxMessageEditor.getValue()),
         status_line: encode($statusLine.html())
     });
-    var filename = "judge0-ide.json";
-    var data = {
-        content: content,
-        filename: filename
-    };
-
+    data = {"data": content};
     $.ajax({
         url: pbUrl,
         type: "POST",
@@ -283,9 +309,12 @@ function save() {
         },
         data: data,
         success: function (data, textStatus, jqXHR) {
-            if (getIdFromURI() != data["short"]) {
+            // if (getIdFromURI() != data["short"]) {
                 window.history.replaceState(null, null, location.origin + location.pathname + "?" + data["short"]);
-            }
+                console.log("success data: " + data["id"]);
+                showError("Saved with ID", data["id"])
+                
+            // }
         },
         error: function (jqXHR, textStatus, errorThrown) {
             handleError(jqXHR, textStatus, errorThrown);
@@ -300,12 +329,13 @@ function downloadSource() {
 
 function loadSavedSource() {
     snippet_id = getIdFromURI();
+    console.log("DEBUG snippet_id: " + snippet_id);
 
     if (snippet_id.length == 36) {
         $.ajax({
             url: apiUrl + "/submissions/" + snippet_id + "?fields=source_code,language_id,stdin,stdout,stderr,compile_output,message,time,memory,status,compiler_options,command_line_arguments&base64_encoded=true",
             type: "GET",
-            success: function(data, textStatus, jqXHR) {
+            success: function (data, textStatus, jqXHR) {
                 sourceEditor.setValue(decode(data["source_code"]));
                 $selectLanguage.dropdown("set selected", data["language_id"]);
                 $compilerOptions.val(data["compiler_options"]);
@@ -385,7 +415,7 @@ function run() {
         redirect_stderr_to_stdout: redirectStderrToStdout
     };
 
-    var sendRequest = function(data) {
+    var sendRequest = function (data) {
         timeStart = performance.now();
         $.ajax({
             url: apiUrl + `/submissions?base64_encoded=true&wait=${wait}`,
@@ -483,7 +513,7 @@ function disposeEditorModeObject() {
     try {
         editorModeObject.dispose();
         editorModeObject = null;
-    } catch(ignorable) {
+    } catch (ignorable) {
     }
 }
 
@@ -495,11 +525,11 @@ function changeEditorMode() {
     } else if (editorMode == "emacs") {
         var statusNode = $("#editor-status-line")[0];
         editorModeObject = new MonacoEmacs.EmacsExtension(sourceEditor);
-        editorModeObject.onDidMarkChange(function(e) {
-          statusNode.textContent = e ? "Mark Set!" : "Mark Unset";
+        editorModeObject.onDidMarkChange(function (e) {
+            statusNode.textContent = e ? "Mark Set!" : "Mark Unset";
         });
-        editorModeObject.onDidChangeKey(function(str) {
-          statusNode.textContent = str;
+        editorModeObject.onDidChangeKey(function (str) {
+            statusNode.textContent = str;
         });
         editorModeObject.start();
     }
@@ -516,22 +546,22 @@ function resolveApiUrl(id) {
 }
 
 function editorsUpdateFontSize(fontSize) {
-    sourceEditor.updateOptions({fontSize: fontSize});
-    stdinEditor.updateOptions({fontSize: fontSize});
-    stdoutEditor.updateOptions({fontSize: fontSize});
-    stderrEditor.updateOptions({fontSize: fontSize});
-    compileOutputEditor.updateOptions({fontSize: fontSize});
-    sandboxMessageEditor.updateOptions({fontSize: fontSize});
+    sourceEditor.updateOptions({ fontSize: fontSize });
+    stdinEditor.updateOptions({ fontSize: fontSize });
+    stdoutEditor.updateOptions({ fontSize: fontSize });
+    stderrEditor.updateOptions({ fontSize: fontSize });
+    compileOutputEditor.updateOptions({ fontSize: fontSize });
+    sandboxMessageEditor.updateOptions({ fontSize: fontSize });
 }
 
 function updateScreenElements() {
     var display = window.innerWidth <= 1200 ? "none" : "";
-    $(".wide.screen.only").each(function(index) {
+    $(".wide.screen.only").each(function (index) {
         $(this).css("display", display);
     });
 }
 
-$(window).resize(function() {
+$(window).resize(function () {
     layout.updateSize();
     updateScreenElements();
     showMessages();
@@ -571,7 +601,7 @@ $(document).ready(function () {
     $updates = $("#updates");
 
     $(`input[name="editor-mode"][value="${editorMode}"]`).prop("checked", true);
-    $("input[name=\"editor-mode\"]").on("change", function(e) {
+    $("input[name=\"editor-mode\"]").on("change", function (e) {
         editorMode = e.target.value;
         localStorageSetItem("editorMode", editorMode);
 
@@ -582,7 +612,7 @@ $(document).ready(function () {
     });
 
     $("input[name=\"redirect-output\"]").prop("checked", redirectStderrToStdout)
-    $("input[name=\"redirect-output\"]").on("change", function(e) {
+    $("input[name=\"redirect-output\"]").on("change", function (e) {
         redirectStderrToStdout = e.target.checked;
         localStorageSetItem("redirectStderrToStdout", redirectStderrToStdout);
     });
@@ -625,7 +655,7 @@ $(document).ready(function () {
 
     $("select.dropdown").dropdown();
     $(".ui.dropdown").dropdown();
-    $(".ui.dropdown.site-links").dropdown({action: "hide", on: "hover"});
+    $(".ui.dropdown.site-links").dropdown({ action: "hide", on: "hover" });
     $(".ui.checkbox").checkbox();
     $(".message .close").on("click", function () {
         $(this).closest(".message").transition("fade");
@@ -687,9 +717,9 @@ $(document).ready(function () {
                 }
             });
 
-            container.on("tab", function(tab) {
+            container.on("tab", function (tab) {
                 tab.element.append("<span id=\"stdout-dot\" class=\"dot\" hidden></span>");
-                tab.element.on("mousedown", function(e) {
+                tab.element.on("mousedown", function (e) {
                     e.target.closest(".lm_tab").children[3].hidden = true;
                 });
             });
@@ -707,9 +737,9 @@ $(document).ready(function () {
                 }
             });
 
-            container.on("tab", function(tab) {
+            container.on("tab", function (tab) {
                 tab.element.append("<span id=\"stderr-dot\" class=\"dot\" hidden></span>");
-                tab.element.on("mousedown", function(e) {
+                tab.element.on("mousedown", function (e) {
                     e.target.closest(".lm_tab").children[3].hidden = true;
                 });
             });
@@ -727,9 +757,9 @@ $(document).ready(function () {
                 }
             });
 
-            container.on("tab", function(tab) {
+            container.on("tab", function (tab) {
                 tab.element.append("<span id=\"compile-output-dot\" class=\"dot\" hidden></span>");
-                tab.element.on("mousedown", function(e) {
+                tab.element.on("mousedown", function (e) {
                     e.target.closest(".lm_tab").children[3].hidden = true;
                 });
             });
@@ -747,9 +777,9 @@ $(document).ready(function () {
                 }
             });
 
-            container.on("tab", function(tab) {
+            container.on("tab", function (tab) {
                 tab.element.append("<span id=\"sandbox-message-dot\" class=\"dot\" hidden></span>");
-                tab.element.on("mousedown", function(e) {
+                tab.element.on("mousedown", function (e) {
                     e.target.closest(".lm_tab").children[3].hidden = true;
                 });
             });
@@ -757,11 +787,14 @@ $(document).ready(function () {
 
         layout.on("initialised", function () {
             $(".monaco-editor")[0].appendChild($("#editor-status-line")[0]);
+            console.log("DEBUG: getIdFromURI() " + getIdFromURI());
             if (getIdFromURI()) {
                 loadSavedSource();
             } else {
-                loadRandomLanguage();
+                // loadRandomLanguage();
             }
+            var url_id = getIdFromURI();
+            loadSourceFromJsonServer(url_id);
             $("#site-navigation").css("border-bottom", "1px solid black");
             sourceEditor.focus();
         });

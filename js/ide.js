@@ -180,35 +180,50 @@ function loadMessages() {
     });
 }
 
+function isInteger(value) {
+    if (typeof value != "string") return false;
+    return !isNaN(value) && 
+           parseInt(Number(value)) == value && 
+           !isNaN(parseInt(value, 10));
+  }
+
 function loadSourceFromJsonServer(url_id) {
     console.log("DEBUG: loadSources url :" + pbUrl + url_id);
-    $.ajax({
-        url: pbUrl + url_id,
-        type: "GET",
-        dataType: 'json',
-        success: function (data) {
-            // data["id"] , JSON.parse(data["data"])
-            // console.log("DEBUG loaded source_code: " +  data["id"] + ", " + data["data"]);
-            data = JSON.parse(data["data"]);
-            console.log("DEBUG loaded source_code: " +  decode(data["source_code"]));
-            sourceEditor.setValue(decode(data["source_code"]));
-            $selectLanguage.dropdown("set selected", data["language_id"]);
-            $compilerOptions.val(data["compiler_options"]);
-            $commandLineArguments.val(data["command_line_arguments"]);
-            stdinEditor.setValue(decode(data["stdin"]));
-            stdoutEditor.setValue(decode(data["stdout"]));
-            stderrEditor.setValue(decode(data["stderr"]));
-            compileOutputEditor.setValue(decode(data["compile_output"]));
-            sandboxMessageEditor.setValue(decode(data["sandbox_message"]));
-            $statusLine.html(decode(data["status_line"]));
-            // changeEditorLanguage();
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            showError("Not Found", "Code not found!");
-            window.history.replaceState(null, null, location.origin + location.pathname);
-            loadRandomLanguage();
-        }
-    });
+
+    if (isInteger(url_id)) {
+        $.ajax({
+            url: pbUrl + url_id,
+            // useDefaultXhrHeader: false, //跨域访问
+            type: "GET",
+            dataType: 'json',
+            success: function (data) {
+                // data["id"] , JSON.parse(data["data"])
+                // console.log("DEBUG loaded source_code: " +  data["id"] + ", " + data["data"]);
+                data = JSON.parse(data["data"]);
+                console.log("DEBUG loaded source_code: " +  decode(data["source_code"]));
+                sourceEditor.setValue(decode(data["source_code"]));
+                $selectLanguage.dropdown("set selected", data["language_id"]);
+                $compilerOptions.val(data["compiler_options"]);
+                $commandLineArguments.val(data["command_line_arguments"]);
+                stdinEditor.setValue(decode(data["stdin"]));
+                stdoutEditor.setValue(decode(data["stdout"]));
+                stderrEditor.setValue(decode(data["stderr"]));
+                compileOutputEditor.setValue(decode(data["compile_output"]));
+                sandboxMessageEditor.setValue(decode(data["sandbox_message"]));
+                $statusLine.html(decode(data["status_line"]));
+                // changeEditorLanguage();
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                showError("Not Found", "Code not found!");
+                window.history.replaceState(null, null, location.origin + location.pathname);
+                loadRandomLanguage();
+            }
+        });
+    } else {
+        loadRandomLanguage();
+    }
+
+        
 }
 
 function showError(title, content) {
@@ -788,11 +803,11 @@ $(document).ready(function () {
         layout.on("initialised", function () {
             $(".monaco-editor")[0].appendChild($("#editor-status-line")[0]);
             console.log("DEBUG: getIdFromURI() " + getIdFromURI());
-            if (getIdFromURI()) {
-                loadSavedSource();
-            } else {
-                // loadRandomLanguage();
-            }
+            // if (getIdFromURI()) {
+            //     loadSavedSource();
+            // } else {
+            //     // loadRandomLanguage();
+            // }
             var url_id = getIdFromURI();
             loadSourceFromJsonServer(url_id);
             $("#site-navigation").css("border-bottom", "1px solid black");

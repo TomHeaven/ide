@@ -34,6 +34,10 @@
     {
       "data": "{\"source_code\":\"I2luY2x1ZGUgPGlvc3RyZWFtPgp1c2luZyBuYW1lc3BhY2Ugc3RkOwovKioKQSArIEIgUHJvYmxlbQoqLwppbnQgbWFpbigpIHsKICAgIGludCBhLCBiOwogICAgLy8gaW5wdXQgdmFyaWFibGVzIGEgYW5kIGIuCiAgICBjaW4gPj4gYSA+PiBiOwogICAgLy8gb3V0cHV0IHRoZSBzdW0uCiAgICBjb3V0IDw8IGEgKyBiIDw8IGVuZGw7CiAgICByZXR1cm4gMDsKfQo=\",\"language_id\":\"54\",\"compiler_options\":\"\",\"command_line_arguments\":\"\",\"stdin\":\"MjAgMzA=\",\"stdout\":\"NTAK\",\"stderr\":\"\",\"compile_output\":\"\",\"sandbox_message\":\"\",\"status_line\":\"QWNjZXB0ZWQsIDAuMDAycywgODYwS0I=\"}",
       "id": 7
+    },
+    {
+      "data": "{\"source_code\":\"I2luY2x1ZGUgPGlvc3RyZWFtPgp1c2luZyBuYW1lc3BhY2Ugc3RkOwovKioKQSArIEIgUHJvYmxlbQoqLwppbnQgc3dhcChpbnQgJmEsIGludCAmYikgewogICAgaW50IHRtcCA9IGE7CiAgICBhID0gYjsKICAgIGIgPSB0bXA7Cn0KCmludCBtYWluKCkgewogICAgaW50IGEsIGI7CiAgICAvLyBpbnB1dCB2YXJpYWJsZXMgYSBhbmQgYi4KICAgIGNpbiA+PiBhID4+IGI7CiAgICAvLyBvdXRwdXQgdGhlIHN1bS4KICAgIGNvdXQgPDwgYSArIGIgPDwgZW5kbDsKICAgIHJldHVybiAwOwp9Cg==\",\"language_id\":\"54\",\"compiler_options\":\"\",\"command_line_arguments\":\"\",\"stdin\":\"MjAgMzA=\",\"stdout\":\"NTAK\",\"stderr\":\"\",\"compile_output\":\"\",\"sandbox_message\":\"\",\"status_line\":\"QWNjZXB0ZWQsIDAuMDAycywgODYwS0I=\"}",
+      "id": 8
     }
   ]
 }

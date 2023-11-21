@@ -11,7 +11,7 @@ var editorMode = localStorageGetItem("editorMode") || "normal";
 var redirectStderrToStdout = ((localStorageGetItem("redirectStderrToStdout") || "false") === "true");
 var editorModeObject = null;
 
-var fontSize = 18;
+var fontSize = 14;
 
 var MonacoVim;
 var MonacoEmacs;

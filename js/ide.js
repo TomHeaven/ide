@@ -678,7 +678,7 @@ $(document).ready(function () {
 
     // loadMessages();
 
-    require(["vs/editor/editor.main", "monaco-vim", "monaco-emacs"], function (ignorable, MVim, MEmacs) {
+    require(["vs/editor/editor.main"], function (ignorable, MVim, MEmacs) {
         layout = new GoldenLayout(layoutConfig, $("#site-content"));
 
         MonacoVim = MVim;

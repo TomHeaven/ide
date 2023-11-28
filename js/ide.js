@@ -175,7 +175,7 @@ function loadMessages() {
         },
         success: function (data, textStatus, jqXHR) {
             messagesData = data;
-            showMessages();
+            // showMessages();
         }
     });
 }
@@ -577,15 +577,13 @@ function updateScreenElements() {
 }
 
 $(window).resize(function () {
-    layout.updateSize();
+    // layout.updateSize();
     updateScreenElements();
-    showMessages();
+    // showMessages();
 });
 
 $(document).ready(function () {
     updateScreenElements();
-
-    console.log("Hey, Judge0 IDE is open-sourced: https://github.com/judge0/ide. Have fun!");
 
     $selectLanguage = $("#select-language");
     $selectLanguage.change(function (e) {

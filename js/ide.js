@@ -576,11 +576,11 @@ function updateScreenElements() {
     });
 }
 
-$(window).resize(function () {
-    // layout.updateSize();
-    updateScreenElements();
-    // showMessages();
-});
+// $(window).resize(function () {
+//     layout.updateSize();
+//     updateScreenElements();
+//     // showMessages();
+// });
 
 $(document).ready(function () {
     updateScreenElements();
@@ -816,6 +816,12 @@ $(document).ready(function () {
 
         // use big font size for ppt display
         editorsUpdateFontSize(fontSize);
+    });
+
+    $(window).resize(function () {
+        layout.updateSize();
+        updateScreenElements();
+        // showMessages();
     });
 });
 
